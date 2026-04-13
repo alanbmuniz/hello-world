@@ -1,0 +1,3 @@
+kivy==2.3.0
+matplotlib==3.9.2
+speechrecognition==3.10.4
