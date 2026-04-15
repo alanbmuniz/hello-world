@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import sys
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -19,6 +20,18 @@ try:
     import speech_recognition as sr
 except Exception:  # speech_recognition opcional em alguns ambientes
     sr = None
+
+
+def _validate_runtime() -> None:
+    """
+    Evita falhas opacas de provider de janela e orienta a correção do ambiente.
+    """
+    major, minor = sys.version_info[:2]
+    if (major, minor) >= (3, 13):
+        raise RuntimeError(
+            "Versão de Python não suportada para esta build do Kivy. "
+            "Use Python 3.10, 3.11 ou 3.12."
+        )
 
 
 KV = """
@@ -351,6 +364,11 @@ class FinanceRoot(BoxLayout):
 
 class FinanceApp(App):
     def build(self):
+        if Window is None:
+            raise RuntimeError(
+                "Kivy não encontrou um provider de janela. "
+                "Instale dependências gráficas e tente novamente (ex.: pygame e libs SDL2)."
+            )
         Window.minimum_width = 360
         Window.minimum_height = 640
         Builder.load_string(KV)
@@ -358,4 +376,14 @@ class FinanceApp(App):
 
 
 if __name__ == "__main__":
-    FinanceApp().run()
+    try:
+        _validate_runtime()
+        FinanceApp().run()
+    except RuntimeError as exc:
+        print(f"Erro de ambiente: {exc}")
+        print(
+            "Sugestão rápida:\n"
+            "1) recrie o ambiente com Python 3.11;\n"
+            "2) pip install -r requirements.txt;\n"
+            "3) execute: python app.py -d"
+        )

@@ -29,6 +29,8 @@ pip install -r requirements.txt
 python app.py
 ```
 
+> Recomendado: **Python 3.10–3.12**. Evite 3.13+ até compatibilidade total das dependências gráficas.
+
 ## Compatibilidade com App Store (Apple) e Play Store (Google)
 
 A base do app usa Kivy, que permite empacotar para Android e iOS.
@@ -69,3 +71,21 @@ Fluxo típico com **kivy-ios** (em macOS):
 - A lógica de IA financeira no exemplo é local (regras e projeção simples), para facilitar MVP.
 - Para IA generativa real (LLM), adicione integração de API (ex.: OpenAI) para respostas contextuais avançadas.
 - Para produção mobile, validar desempenho, privacidade de dados e compliance das lojas.
+
+## Solução de problemas (Kivy Window provider)
+
+Se você receber erro como:
+- `Unable to find any valuable Window provider`
+- `ModuleNotFoundError: No module named 'pygame'`
+
+Tente:
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+python app.py -d
+```
+
+Em Linux, também pode ser necessário instalar bibliotecas de sistema do SDL2/OpenGL antes do `pip install`.
