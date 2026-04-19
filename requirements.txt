@@ -2,3 +2,4 @@ kivy==2.3.0
 matplotlib==3.9.2
 speechrecognition==3.10.4
 pygame==2.6.1
+mysql-connector-python==9.3.0

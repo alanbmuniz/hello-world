@@ -1,84 +1,88 @@
-# Assistente Financeiro IA (Python + Kivy)
+# Assistente Financeiro IA (Python + Kivy + MySQL)
 
-Aplicativo em Python para **controle financeiro pessoal com IA**, com suporte a interação por **chat e voz**, avaliação de saúde financeira, simulação de gastos, projeções e geração de gráficos.
+Aplicativo em Python para **controle financeiro pessoal com IA**, com interação por **chat e voz**, análise da saúde financeira, projeções e armazenamento persistente no **MySQL**.
 
 ## Funcionalidades
 
-- Chat inteligente para responder:
-  - como está a saúde financeira;
-  - se pode realizar um gasto específico;
-  - projeções de compras e saldo futuro.
+- Chat para responder sobre:
+  - saúde financeira;
+  - decisão de gastos específicos;
+  - projeções futuras.
 - Cadastro de receitas e despesas por categoria.
-- Entrada por voz (quando microfone e dependências estiverem disponíveis).
-- Geração de gráficos:
-  - pizza de despesas por categoria;
-  - barra de receita vs despesa.
+- Entrada por voz (opcional).
+- Gráficos de análise financeira.
+- Persistência dos lançamentos em MySQL para manter histórico entre execuções.
 
 ## Stack
 
 - **Kivy**: interface multiplataforma (Android/iOS/desktop).
-- **Matplotlib**: gráficos financeiros.
-- **SpeechRecognition**: transcrição de voz (opcional).
+- **MySQL**: persistência de dados financeiros.
+- **Matplotlib**: gráficos.
+- **SpeechRecognition**: voz opcional.
 
 ## Executar localmente
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # Linux/macOS
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 python app.py
 ```
 
-> Recomendado: **Python 3.10–3.12**. Evite 3.13+ até compatibilidade total das dependências gráficas.
+> Recomendado: **Python 3.10–3.12**.
 
-## Compatibilidade com App Store (Apple) e Play Store (Google)
+## Configuração do MySQL (segura)
 
-A base do app usa Kivy, que permite empacotar para Android e iOS.
+1. Crie banco e usuário com privilégios mínimos:
 
-### Android (Play Store)
+```sql
+CREATE DATABASE finance_ai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'finance_app'@'%' IDENTIFIED BY 'SENHA_FORTE_AQUI';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, INDEX ON finance_ai.* TO 'finance_app'@'%';
+FLUSH PRIVILEGES;
+```
 
-Fluxo típico com **Buildozer**:
+2. Defina variáveis de ambiente (não commitar senha no código):
 
-1. Instalar dependências do Buildozer e Android SDK/NDK.
-2. Gerar configuração:
-   ```bash
-   buildozer init
-   ```
-3. Ajustar `buildozer.spec` (nome app, pacote, permissões de microfone etc.).
-4. Build APK/AAB:
-   ```bash
-   buildozer android release
-   ```
-5. Assinar artefato final e publicar no Google Play Console.
+```bash
+export FINANCE_DB_HOST=127.0.0.1
+export FINANCE_DB_PORT=3306
+export FINANCE_DB_NAME=finance_ai
+export FINANCE_DB_USER=finance_app
+export FINANCE_DB_PASSWORD='SENHA_FORTE_AQUI'
+export FINANCE_APP_USER='alan'
+# opcional para TLS:
+# export FINANCE_DB_SSL_CA=/caminho/ca.pem
+```
 
-### iOS (App Store)
+3. Execute o app:
 
-Fluxo típico com **kivy-ios** (em macOS):
+```bash
+python app.py -d
+```
 
-1. Instalar `kivy-ios` e toolchains Apple.
-2. Criar projeto Xcode a partir do app Kivy.
-3. Configurar permissões (microfone), assinatura/certificados e provisioning profile.
-4. Gerar archive e enviar via Xcode para App Store Connect.
+A tabela `financial_entries` é criada automaticamente na primeira conexão.
 
-## Arquivos principais
+## Segurança recomendada
 
-- `app.py`: aplicação principal (UI, IA financeira e gráficos).
-- `finance_data.json`: base local de lançamentos (gerado em runtime).
-- `financial_dashboard.png`: imagem de gráficos (gerada sob demanda).
+- Use senha forte e usuário MySQL dedicado ao app.
+- Não grave credenciais no código-fonte; use variáveis de ambiente.
+- Habilite TLS (`FINANCE_DB_SSL_CA`) quando o banco estiver remoto.
+- Faça backup periódico do banco.
 
-## Observações importantes
+## Compatibilidade com lojas (Play Store / App Store)
 
-- A lógica de IA financeira no exemplo é local (regras e projeção simples), para facilitar MVP.
-- Para IA generativa real (LLM), adicione integração de API (ex.: OpenAI) para respostas contextuais avançadas.
-- Para produção mobile, validar desempenho, privacidade de dados e compliance das lojas.
+- **Android**: build com Buildozer.
+- **iOS**: build com kivy-ios + Xcode.
 
-## Solução de problemas (Kivy Window provider)
+## Troubleshooting (Kivy)
 
-Se você receber erro como:
+Se aparecer:
 - `Unable to find any valuable Window provider`
 - `ModuleNotFoundError: No module named 'pygame'`
 
-Tente:
+Use Python 3.11 e reinstale dependências:
 
 ```bash
 python3.11 -m venv .venv
@@ -87,5 +91,3 @@ pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 python app.py -d
 ```
-
-Em Linux, também pode ser necessário instalar bibliotecas de sistema do SDL2/OpenGL antes do `pip install`.
